@@ -5,7 +5,7 @@ use warnings;
 
 use JSON;
 use Digest::MD5 'md5_hex';
-use CGI qw(:standard param request_method header url iframe img span div br center url_param);
+use CGI qw(:standard param request_method header url iframe img span div br center multi_param url_param);
 use Carp qw(croak cluck);
 use File::Basename 'dirname','basename';
 use Text::Tabs;
