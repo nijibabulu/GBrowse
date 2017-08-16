@@ -882,6 +882,10 @@ HostnameLookups Off
 
 <IfModule so_module>
 
+  <IfModule !unixd_module>
+    LoadModule unixd_module $modules/mod_unixd.so
+  </IfModule>
+
  <IfModule !log_config_module>
    LoadModule log_config_module $modules/mod_log_config.so
  </IfModule>
@@ -949,11 +953,13 @@ sub gbrowse_demo_conf {
     my $additional_config = '';
     my $namevirtualhost   = "NameVirtualHost *:$port";
 
+    my $modules = $self->config_data('apachemodules');
+
     if ($self->apache_version =~ /2\.4/) {
 	$namevirtualhost   = '';
 	$additional_config = <<END;
-LoadModule authz_core_module /usr/lib/apache2/modules/mod_authz_core.so
-LoadModule mpm_prefork_module /usr/lib/apache2/modules/mod_mpm_prefork.so
+LoadModule authz_core_module $modules/mod_authz_core.so
+LoadModule mpm_prefork_module $modules/mod_mpm_prefork.so
 <IfModule mpm_prefork_module>
 	StartServers			 5
 	MinSpareServers		  5
