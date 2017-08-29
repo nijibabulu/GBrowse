@@ -376,7 +376,9 @@ sub apache_conf {
 	? "PerlSwitches ".join ' ',map{"-I$_"} split ':',$perl5lib
         : '';
 
-    my ($allow_all,$deny_all) = $self->auth_conf;
+    my ($allow_all,$deny_all,$new_auth) = $self->auth_conf;
+
+    my $cgi_auth = $new_auth ? $allow_all : '';
 
     return <<END;
 Alias        "/gbrowse2/i/" "$tmp/images/"
@@ -403,6 +405,7 @@ ScriptAlias  "/gb2"      "$cgibin"
 
 <Directory "$cgibin">
   ${inc}
+  $cgi_auth
   Options ExecCGI
   SetEnv GBROWSE_CONF   "$conf"
 </Directory>
@@ -929,7 +932,7 @@ sub auth_conf {
     my $new_auth  = $self->apache_version =~ /2\.4/;
     my $allow_all = $new_auth ? "Require all granted" : "Order allow,deny\n  Allow from all";
     my $deny_all  = $new_auth ? "Require all denied"  : "Order allow,deny\n  Deny from all";
-    return ($allow_all,$deny_all);
+    return ($allow_all,$deny_all,$new_auth);
 }
 
 sub apache_version {
