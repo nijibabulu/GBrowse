@@ -29,27 +29,19 @@ sub do_sendmail {
 	  $globals->smtp or die "No SMTP server found in globals";
 
 	  my ($server, $port, $protocol, $username, $password) = split ':', $globals->smtp;
+      eval "require Net::SMTPS" unless Net::SMTPS->can('new');
 	  $protocol ||= 'plain';
-	  $port     ||= $protocol eq 'plain' ? 25 : 465;
-	  $protocol =~ /plain|ssl/ or die 'encryption must be either "plain" or "ssl"';
+	  $port     ||= !defined($protocol) ? 25 : 465;
+	  !defined($protocol) or $protocol =~ /starttls|ssl/ or die 'encryption must be either undef, "starttls" or "ssl"';
 	
 	  # At least some SMTP servers will refuse to accept mail
 	  # unless From matches the authentication username.
 	  my $smtp_from   = $username ? $username : $args->{from};
 
-	  my $smtp_sender;
-	  if ($protocol eq 'plain') {
-	      eval "require Net::SMTP" unless Net::SMTP->can('new');
-	      $smtp_sender = 'Net::SMTP';
-	  } else {
-	      eval "require Net::SMTP::SSL" unless Net::SMTP::SSL->can('new');
-	      $smtp_sender = 'Net::SMTP::SSL';
-	  }
-
-	  my $smtp_obj = $smtp_sender->new(
+      my $smtp_obj = Net::SMTPS->new(
 	      $server,
 	      Port    => $port,
-	      Debug   => 0,
+          doSSL   => $protocol,
 	      )
 	      or die "Could not connect to outgoing mail server $server";
 	  
